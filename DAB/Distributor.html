@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Money Distributor</title>
+        <link rel="shortcut icon" href="./aspire-visa-corporate-card-800x450-removebg-preview.png" type="image/x-icon" />
+        <link rel="stylesheet" href="./Distributor.css" />
+    </head>
+    <body>
+        <h1 class="title">atm</h1>
+        <div class="inputsContainer">
+            <div class="CreditCardContainer">
+                <input class="creditInp" type="number" id="creditCartNumber" placeholder="Credit Card Number" />
+                <input class="creditInp" type="text" id="creditCartExp" placeholder="Expiration Date" />
+                <input class="creditInp" type="number" id="creditCartCvv" placeholder="CVV" />
+            </div>
+
+            <div class="AmountInpContainer">
+                <input class="creditInp" type="number" id="AmountInput" placeholder="Amount To Withdraw" />
+                <button class="buttonWithdraw" onclick="VerifyAndGetBills()">get My Money!</button>
+            </div>
+        </div>
+        <div id="resultDiv"></div>
+    </body>
+
+    <script>
+        //selection de l'input du numero decarte
+        var inpCredNumber = document.getElementById("creditCartNumber");
+        //selection de l'input day d'expiration
+        var inpCredExp = document.getElementById("creditCartExp");
+        //selection de l'input CVV
+        var inpCredCvv = document.getElementById("creditCartCvv");
+        //selection de l'input montant a retirer
+        var inpAmount = document.getElementById("AmountInput");
+        //selection du div dans lequelle on va afficher le resultat
+        var divToApprend = document.getElementById("resultDiv");
+
+        // creation d'un tableau qui contiens les valeurs desbillets
+        var billsArray = [1, 5, 10, 20, 50, 100, 200, 500];
+        // vreation d'un objet ou on va stocker le nombre de chaque billet avec son montant
+        var billsCount = {};
+
+        // creation d'un objet qui va qtocker notre numero de carte
+        var ValidCreditCard = {
+            carNumber: 41225874365145,
+            cvv: 541,
+            expire: "12/26",
+        };
+
+        // declaration d'une fonction
+        function VerifyAndGetBills() {
+            //verrification input
+            if (!inpCredNumber.value || parseInt(inpCredNumber.value) != ValidCreditCard.carNumber) {
+                inpCredNumber.style = "border: 2px solid #FF3232";
+                return;
+            }
+
+            //verrification input
+            if (!inpCredExp.value || inpCredExp.value != ValidCreditCard.expire) {
+                inpCredExp.style = "border: 2px solid #FF3232";
+                return;
+                //verrification input
+            }
+
+            if (!inpCredCvv.value || parseInt(inpCredCvv.value) != ValidCreditCard.cvv) {
+                inpCredCvv.style = "border: 2px solid #FF3232";
+                return;
+                //verrification input
+            }
+
+            if (!inpAmount.value) {
+                inpAmount.style = "border: 2px solid #FF3232";
+                return;
+                //verrification input
+            }
+
+            //reinitialisation des styles d'erreur quand toutes les conditions sonts passées
+            inpCredNumber.style = "";
+            inpAmount.style = "";
+            inpCredCvv.style = "";
+            inpCredExp.style = "";
+            divToApprend.innerHTML = "";
+            billsCount = {};
+
+            // appelle de la fonction qui va calculer le nombre de billets
+            getBillsCount(inpAmount.value, billsArray.length - 1);
+
+            // inversion du tableau des billet pour les afficher du plus grand au plus petit
+            var reversetArr = billsArray.reverse();
+
+            // for loop pour afficher le resultat dasn le HTML
+            for (let i = 0; i < reversetArr.length; i++) {
+                // verrification que le nombre de billets > 0 si non ne rien afficher
+                if (billsCount[reversetArr[i]] > 0) {
+                    // creation d'un div
+                    var newDiv = document.createElement("div");
+                    // creation d'un noed de texte ( c'est une technique alternative au .innerTexte)
+                    var text = document.createTextNode(`you got ${billsCount[reversetArr[i]]} bills of ${reversetArr[i]}$`);
+                    //insertion du texte dans le div
+                    newDiv.appendChild(text);
+                    // attribution d'une classe au div
+                    newDiv.setAttribute("class", "billClass");
+                    // ajout de notre div au div d'affichage
+                    divToApprend.appendChild(newDiv);
+                }
+            }
+        }
+
+        // declaration de la fonction qui calcule le nombre de billets avec comme parametres le montant et la longeur du tableau
+        function getBillsCount(amount, i) {
+            //verrification que i est superrieur au debut du tableau
+            if (i === -1) {
+                // si oui arreter la fonction
+                return;
+            }
+            // transformation du montant en nombre antier (on sait jamais c'est mieux de s'en assurer)
+            var IntAmount = parseInt(amount);
+            //declaration d'un variable qu stock le nombre de billets de la coupure actuelle (selectionnée avec son index dans le tableau)
+            var billsNumber = Math.floor(IntAmount / billsArray[i]);
+            // creation d'un variable qui stock la difference entre le montant saisi et le nombre de billets multiplié par le montant du billet
+            // pour avoir le restant a diviser sur la prochaine coupure
+            var thisAmount = IntAmount - billsNumber * billsArray[i];
+
+            // attribution d'une clef ( par exemple 500 qui represente le nom de la coupure de billet)
+            //et une valeur (par exemple 4 qui represente le nombre de billets) a notre objet crée precedement
+            Object.defineProperty(billsCount, billsArray[i], { value: billsNumber });
+
+            //appelle de la fonction a elle meme avec la specification de (i-1) pour dire de descendre
+            //dans l'index du tableau et refaire la meme chose que tt a l'heure (appelle recursif en quelque sortes)
+            //ca nous evite d'utiliser une loop
+            getBillsCount(thisAmount, i - 1);
+        }
+    </script>
+</html>
